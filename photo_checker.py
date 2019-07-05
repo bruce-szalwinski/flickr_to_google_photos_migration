@@ -3,6 +3,12 @@ import os
 import json
 import re
 
+"""
+This module looks at all of the entries in the list of photos from flickr and attempts to find a matching completed task from celery.
+A completed task would indicate that celery was able to read the photo from flickr and transfer it to google.  The url of the photo will
+be printed for photos that don't have a matching completed task.
+"""
+
 def load_urls():
     urls = []
     p = re.compile("https:[^']*")
@@ -26,13 +32,12 @@ def check_photoset(urls: list):
             with open(f"photosets-complete/{file}", "rb") as photo_tasks_file:
                 my_photos = pickle.load(photo_tasks_file)
 
-            photo_url = my_photos[0]['photoUrl']
-            if photo_url in urls:
-                found += 1
-            else:
-                print(photo_url)
-                print(f"mv ./photosets-complete/{file} ./photosets/.")
-                not_found += 1
+            for photo in my_photos:
+                if photo['photoUrl'] in urls:
+                    found += 1
+                else:
+                    print(photo['photoUrl'])
+                    not_found += 1
 
     print(f"found: {found}")
     print(f"not found: {not_found}")
